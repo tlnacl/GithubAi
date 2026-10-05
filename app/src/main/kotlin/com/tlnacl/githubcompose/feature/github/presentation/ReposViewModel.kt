@@ -1,4 +1,5 @@
 package com.tlnacl.githubcompose.feature.github.presentation
+import com.tlnacl.githubcompose.R
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

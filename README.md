@@ -10,17 +10,15 @@ Browse public GitHub users, open a user profile and repositories, view repositor
 
 ## Architecture
 
-- `app`: Android entry points and NavHost assembly; original application ID `com.tlnacl.githubcompose`.
+- `app`: Android entry points, NavHost assembly, and GitHub feature code; original application ID `com.tlnacl.githubcompose`.
+  Feature code is organized into `feature/github/domain`, `data`, and `presentation` packages within this module, with its unit tests in `app/src/test`.
 - `core:domain`: typed Result and shared error types.
 - `core:data`: configured Ktor client and safe HTTP response/exception handling.
 - `core:presentation`: UiText, error components and lifecycle event collection.
 - `core:design-system`: shared theme and Compose components.
-- `feature:github:domain`: framework-free User/Repo models and remote data source interface.
-- `feature:github:data`: serializable DTOs, mappers, Ktor implementation and Hilt bindings.
-- `feature:github:presentation`: typed routes, users/repos MVI ViewModels and Root/Screen composables.
 - `build-logic`: shared Android library, Compose and Hilt convention plugins.
 
-All eight Android skills remain in `.agents/skills`; `AGENTS.md` applies them to future changes.
+The remaining Android skills live in `.agents/skills`; `AGENTS.md` applies them to future changes. Feature layers use packages inside `app` rather than separate Gradle modules.
 The app uses public, unauthenticated GitHub endpoints, so GitHub rate limits apply. Like the old app, it displays the first API page.
 
 ## Validation
@@ -29,7 +27,7 @@ Debug APK build succeeded with Android Studio’s Java 25 runtime on AGP 9.4.1 a
 
 ```sh
 ./gradlew :app:assembleDebug
-./gradlew :feature:github:data:testDebugUnitTest :feature:github:presentation:testDebugUnitTest
+./gradlew :app:testDebugUnitTest
 ```
 
 The migration raises the minimum Android version from 21 to 24 to match the Codex starter and current UI dependencies, and targets SDK 36.

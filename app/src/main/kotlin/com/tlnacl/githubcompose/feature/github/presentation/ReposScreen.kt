@@ -1,4 +1,5 @@
 package com.tlnacl.githubcompose.feature.github.presentation
+import com.tlnacl.githubcompose.R
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
