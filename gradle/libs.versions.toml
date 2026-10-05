@@ -1,4 +1,5 @@
 [versions]
+ktlint = "1.8.0"
 agp = "9.4.1"
 kotlin = "2.2.21"
 composeBom = "2025.12.01"
@@ -18,6 +19,7 @@ turbine = "1.2.1"
 assertk = "0.28.1"
 
 [libraries]
+ktlint-cli = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlint" }
 javapoet = { module = "com.squareup:javapoet", version = "1.13.0" }
 android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }

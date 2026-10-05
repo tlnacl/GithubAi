@@ -1,11 +1,30 @@
 package com.tlnacl.githubcompose.designdemo
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -38,7 +57,8 @@ sealed interface GalleryEvent {
     data object ShowFeedback : GalleryEvent
 }
 class GalleryViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
-    private val mutableState = MutableStateFlow(GalleryState(savedStateHandle["darkTheme"] ?: false))
+    private val mutableState =
+        MutableStateFlow(GalleryState(savedStateHandle["darkTheme"] ?: false))
     val state = mutableState.asStateFlow()
     private val eventChannel = Channel<GalleryEvent>(Channel.BUFFERED)
     val events = eventChannel.receiveAsFlow()
@@ -49,7 +69,10 @@ class GalleryViewModel(private val savedStateHandle: SavedStateHandle) : ViewMod
                 savedStateHandle["darkTheme"] = action.enabled
                 mutableState.update { it.copy(darkTheme = action.enabled) }
             }
-            GalleryAction.ClickSample -> viewModelScope.launch { eventChannel.send(GalleryEvent.ShowFeedback) }
+
+            GalleryAction.ClickSample -> viewModelScope.launch {
+                eventChannel.send(GalleryEvent.ShowFeedback)
+            }
         }
     }
 }
@@ -82,7 +105,11 @@ private fun GalleryEvents(viewModel: GalleryViewModel, snackbar: SnackbarHostSta
 }
 
 @Composable
-fun GalleryScreen(state: GalleryState, onAction: (GalleryAction) -> Unit, modifier: Modifier = Modifier) {
+fun GalleryScreen(
+    state: GalleryState,
+    onAction: (GalleryAction) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(20.dp),
@@ -106,14 +133,29 @@ fun GalleryScreen(state: GalleryState, onAction: (GalleryAction) -> Unit, modifi
         }
         item {
             GallerySection(stringResource(R.string.colors)) {
-                ColorSample(stringResource(R.string.primary), MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onPrimary)
-                ColorSample(stringResource(R.string.secondary), MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.onSecondary)
-                ColorSample(stringResource(R.string.surface), MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.onSurface)
+                ColorSample(
+                    stringResource(R.string.primary),
+                    MaterialTheme.colorScheme.primary,
+                    MaterialTheme.colorScheme.onPrimary,
+                )
+                ColorSample(
+                    stringResource(R.string.secondary),
+                    MaterialTheme.colorScheme.secondary,
+                    MaterialTheme.colorScheme.onSecondary,
+                )
+                ColorSample(
+                    stringResource(R.string.surface),
+                    MaterialTheme.colorScheme.surface,
+                    MaterialTheme.colorScheme.onSurface,
+                )
             }
         }
         item {
             GallerySection(stringResource(R.string.typography)) {
-                Text(stringResource(R.string.headline), style = MaterialTheme.typography.headlineLarge)
+                Text(
+                    stringResource(R.string.headline),
+                    style = MaterialTheme.typography.headlineLarge,
+                )
                 Text(stringResource(R.string.title), style = MaterialTheme.typography.titleLarge)
                 Text(stringResource(R.string.body), style = MaterialTheme.typography.bodyLarge)
                 Text(stringResource(R.string.label), style = MaterialTheme.typography.labelSmall)
@@ -122,7 +164,10 @@ fun GalleryScreen(state: GalleryState, onAction: (GalleryAction) -> Unit, modifi
         item {
             GallerySection(stringResource(R.string.avatars)) {
                 Avatar(login = "Alex", url = "")
-                Text(stringResource(R.string.avatar_note), style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    stringResource(R.string.avatar_note),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
             }
         }
         item {
@@ -132,10 +177,18 @@ fun GalleryScreen(state: GalleryState, onAction: (GalleryAction) -> Unit, modifi
         }
         item {
             GallerySection(stringResource(R.string.buttons)) {
-                Text(stringResource(R.string.button_note), style = MaterialTheme.typography.bodyMedium)
-                Button(onClick = { onAction(GalleryAction.ClickSample) }) { Text(stringResource(R.string.primary_action)) }
-                OutlinedButton(onClick = { onAction(GalleryAction.ClickSample) }) { Text(stringResource(R.string.secondary_action)) }
-                Button(onClick = {}, enabled = false) { Text(stringResource(R.string.disabled_action)) }
+                Text(
+                    stringResource(R.string.button_note),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Button(onClick = {
+                    onAction(GalleryAction.ClickSample)
+                }) { Text(stringResource(R.string.primary_action)) }
+                OutlinedButton(onClick = {
+                    onAction(GalleryAction.ClickSample)
+                }) { Text(stringResource(R.string.secondary_action)) }
+                Button(onClick = {
+                }, enabled = false) { Text(stringResource(R.string.disabled_action)) }
             }
         }
     }
@@ -151,7 +204,14 @@ private fun GallerySection(title: String, content: @Composable ColumnScope.() ->
 
 @Composable
 private fun ColorSample(label: String, color: Color, textColor: Color) {
-    Text(label, color = textColor, modifier = Modifier.fillMaxWidth().background(color, MaterialTheme.shapes.medium).padding(16.dp))
+    Text(
+        label,
+        color = textColor,
+        modifier = Modifier.fillMaxWidth().background(
+            color,
+            MaterialTheme.shapes.medium,
+        ).padding(16.dp),
+    )
 }
 
 @Preview(showBackground = true)
@@ -163,5 +223,7 @@ private fun GalleryLightPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun GalleryDarkPreview() {
-    GithubComposeTheme(darkTheme = true) { Surface { GalleryScreen(GalleryState(darkTheme = true), {}) } }
+    GithubComposeTheme(darkTheme = true) {
+        Surface { GalleryScreen(GalleryState(darkTheme = true), {}) }
+    }
 }

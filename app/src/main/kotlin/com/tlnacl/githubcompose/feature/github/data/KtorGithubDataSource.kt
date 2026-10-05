@@ -13,7 +13,8 @@ import io.ktor.http.appendPathSegments
 import javax.inject.Inject
 import javax.inject.Singleton
 
-class KtorGithubDataSource @Inject constructor(private val client: HttpClient) : GithubRemoteDataSource {
+class KtorGithubDataSource @Inject constructor(private val client: HttpClient) :
+    GithubRemoteDataSource {
     override suspend fun getUsers() = safeCall<List<UserDto>> { client.get("users") }
         .map { users -> users.map(UserDto::toUser) }
     override suspend fun getUser(login: String) = safeCall<UserDto> {
@@ -23,6 +24,7 @@ class KtorGithubDataSource @Inject constructor(private val client: HttpClient) :
         client.get { url { appendPathSegments("users", login, "repos") } }
     }.map { repos -> repos.map(RepoDto::toRepo) }
 }
+
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class GithubDataModule {

@@ -1,5 +1,8 @@
 import org.gradle.api.artifacts.VersionCatalogsExtension
-plugins { id("codex.android-library"); id("org.jetbrains.kotlin.plugin.compose") }
+plugins {
+    id("codex.android-library")
+    id("org.jetbrains.kotlin.plugin.compose")
+}
 android { buildFeatures { compose = true } }
 val catalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
 dependencies {

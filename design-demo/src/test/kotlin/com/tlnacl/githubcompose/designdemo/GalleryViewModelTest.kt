@@ -17,8 +17,13 @@ import org.junit.jupiter.api.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GalleryViewModelTest {
-    @BeforeEach fun setup() { Dispatchers.setMain(UnconfinedTestDispatcher()) }
-    @AfterEach fun cleanup() { Dispatchers.resetMain() }
+    @BeforeEach fun setup() {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+    }
+
+    @AfterEach fun cleanup() {
+        Dispatchers.resetMain()
+    }
 
     @Test fun `selected theme is saved and restored`() {
         val handle = SavedStateHandle()
@@ -26,7 +31,10 @@ class GalleryViewModelTest {
         viewModel.onAction(GalleryAction.SetDarkTheme(true))
         assertThat(viewModel.state.value.darkTheme).isTrue()
         assertThat(handle.get<Boolean>("darkTheme")).isEqualTo(true)
-        val restored = GalleryViewModel(SavedStateHandle(mapOf("darkTheme" to handle.get<Boolean>("darkTheme"))))
+        val restored =
+            GalleryViewModel(
+                SavedStateHandle(mapOf("darkTheme" to handle.get<Boolean>("darkTheme"))),
+            )
         assertThat(restored.state.value.darkTheme).isTrue()
     }
 

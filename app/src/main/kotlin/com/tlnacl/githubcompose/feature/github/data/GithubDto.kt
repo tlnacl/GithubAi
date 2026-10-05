@@ -1,6 +1,6 @@
 package com.tlnacl.githubcompose.feature.github.data
-import com.tlnacl.githubcompose.feature.github.domain.User
 import com.tlnacl.githubcompose.feature.github.domain.Repo
+import com.tlnacl.githubcompose.feature.github.domain.User
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -16,8 +16,11 @@ internal data class UserDto(
     val followers: Int = 0,
     val following: Int = 0,
 )
-internal fun UserDto.toUser() = User(login, avatarUrl, htmlUrl, name.orEmpty(), location,
-    blogUrl.orEmpty(), publicRepos, followers, following)
+internal fun UserDto.toUser() = User(
+    login, avatarUrl, htmlUrl, name.orEmpty(), location,
+    blogUrl.orEmpty(), publicRepos, followers, following,
+)
+
 @Serializable
 internal data class RepoDto(
     val id: Long,
@@ -29,5 +32,13 @@ internal data class RepoDto(
     val language: String? = null,
     @SerialName("html_url") val htmlUrl: String = "",
 )
-internal fun RepoDto.toRepo() = Repo(id, name, description, watchersCount, forksCount,
-    stargazersCount, language, htmlUrl)
+internal fun RepoDto.toRepo() = Repo(
+    id,
+    name,
+    description,
+    watchersCount,
+    forksCount,
+    stargazersCount,
+    language,
+    htmlUrl,
+)

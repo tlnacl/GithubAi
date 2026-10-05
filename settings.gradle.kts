@@ -1,10 +1,17 @@
 pluginManagement {
     includeBuild("build-logic")
-    repositories { google(); mavenCentral(); gradlePluginPortal() }
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories { google(); mavenCentral() }
+    repositories {
+        google()
+        mavenCentral()
+    }
 }
 rootProject.name = "Codex"
 include(":app", ":core:design-system", ":design-demo")

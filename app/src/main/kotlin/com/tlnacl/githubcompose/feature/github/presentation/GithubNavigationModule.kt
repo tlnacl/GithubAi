@@ -13,5 +13,6 @@ import dagger.hilt.android.components.ViewModelComponent
 @InstallIn(ViewModelComponent::class)
 object GithubNavigationModule {
     @Provides
-    fun provideReposRoute(savedStateHandle: SavedStateHandle): ReposRoute = savedStateHandle.toRoute()
+    fun provideReposRoute(savedStateHandle: SavedStateHandle): ReposRoute =
+        savedStateHandle.toRoute()
 }

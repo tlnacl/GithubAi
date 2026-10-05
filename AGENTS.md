@@ -13,3 +13,6 @@ Use version catalog dependencies and the convention plugins in `build-logic` for
 
 Build: `./gradlew :app:assembleDebug :design-demo:assembleDebug`
 Unit tests: `./gradlew :app:testDebugUnitTest :design-demo:testDebugUnitTest`
+
+Formatting: `./gradlew ktlintFormat`
+Code style check: `./gradlew ktlintCheck` (also included in root `check`)

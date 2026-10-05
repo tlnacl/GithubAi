@@ -40,3 +40,17 @@ The gallery uses local samples and requires no GitHub connection or account.
 Add reusable components from Figma to `core/design-system` and their examples to
 `design-demo`; the product and gallery then use the same implementations.
 The current gallery demonstrates the existing components, not a new Figma design.
+
+## Kotlin formatting
+
+[ktlint](https://github.com/ktlint/ktlint) is pinned in the version catalog.
+Both tasks include Kotlin source, tests, and Gradle scripts (including build-logic),
+and exclude generated files and local skill files. Compose function names follow
+the `@Composable` convention.
+
+```sh
+./gradlew ktlintFormat
+./gradlew ktlintCheck
+```
+
+The root `check` task also runs `ktlintCheck`.

@@ -18,6 +18,7 @@ class MainActivity : ComponentActivity() {
         setContent { GithubComposeTheme { AppNavigation() } }
     }
 }
+
 @Composable
 private fun AppNavigation() {
     val controller = rememberNavController()
