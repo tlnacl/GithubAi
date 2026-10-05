@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Design Gallery</string>
+    <string name="intro">Review the shared components used by GithubCompose.</string>
+    <string name="dark_theme">Dark theme</string>
+    <string name="colors">Colors</string>
+    <string name="primary">Primary</string>
+    <string name="secondary">Secondary</string>
+    <string name="surface">Surface</string>
+    <string name="typography">Typography</string>
+    <string name="headline">Meet your next idea</string>
+    <string name="title">A place for great work</string>
+    <string name="body">Clear typography makes everyday tasks easier to understand.</string>
+    <string name="label">LABEL SMALL</string>
+    <string name="avatars">Avatar</string>
+    <string name="avatar_note">Local placeholder for a missing or unavailable profile image.</string>
+    <string name="loading_title">Loading</string>
+    <string name="buttons">Material buttons</string>
+    <string name="button_note">Theme defaults for enabled and disabled actions.</string>
+    <string name="primary_action">Primary action</string>
+    <string name="secondary_action">Secondary action</string>
+    <string name="disabled_action">Disabled action</string>
+    <string name="action_feedback">Button interaction works.</string>
+</resources>

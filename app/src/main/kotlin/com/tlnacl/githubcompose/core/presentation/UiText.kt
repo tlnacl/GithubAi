@@ -1,4 +1,5 @@
 package com.tlnacl.githubcompose.core.presentation
+import com.tlnacl.githubcompose.R
 import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable

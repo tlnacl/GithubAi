@@ -14,8 +14,11 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 
 @Composable
-fun GithubComposeTheme(content: @Composable () -> Unit) {
-    val colors = if (isSystemInDarkTheme()) darkColorScheme(primary = Color(0xFFBB86FC))
+fun GithubComposeTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit,
+) {
+    val colors = if (darkTheme) darkColorScheme(primary = Color(0xFFBB86FC))
         else lightColorScheme(primary = Color(0xFF6200EE), secondary = Color(0xFF03DAC5))
     MaterialTheme(colorScheme = colors, content = content)
 }

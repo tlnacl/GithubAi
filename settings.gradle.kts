@@ -7,4 +7,4 @@ dependencyResolutionManagement {
     repositories { google(); mavenCentral() }
 }
 rootProject.name = "Codex"
-include(":app", ":core:domain", ":core:data", ":core:presentation", ":core:design-system")
+include(":app", ":core:design-system", ":design-demo")
