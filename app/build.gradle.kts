@@ -1,27 +1,32 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("codex.hilt")
 }
 android {
-    namespace = "com.example.codex"
+    namespace = "com.tlnacl.githubcompose"
     compileSdk = 36
     defaultConfig {
-        applicationId = "com.example.codex"
+        applicationId = "com.tlnacl.githubcompose"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
     }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
     buildFeatures { compose = true }
 }
+kotlin { jvmToolchain(17) }
 dependencies {
-    implementation(libs.androidx.core.ktx)
+    implementation(project(":feature:github:presentation"))
+    implementation(project(":feature:github:data"))
+    implementation(project(":core:presentation"))
+    implementation(project(":core:design-system"))
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.navigation.compose)
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    debugImplementation(libs.androidx.compose.ui.tooling)
 }

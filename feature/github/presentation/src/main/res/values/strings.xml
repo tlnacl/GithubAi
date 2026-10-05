@@ -1,0 +1,25 @@
+<resources>
+    <string name="users_title">GitHub Users</string>
+    <string name="users_header">Users from public GitHub API</string>
+    <string name="users_loaded">Users are loaded.</string>
+    <string name="repos_title">Repositories</string>
+    <string name="back">Back</string>
+    <string name="refresh">Refresh</string>
+    <string name="no_users">No GitHub users found.</string>
+    <string name="no_repos">This user has no public repositories.</string>
+    <string name="location_not_defined">Location not defined</string>
+    <string name="language_not_defined">Language not defined</string>
+    <string name="no_description">No description</string>
+    <string name="profile">SEE ALL</string>
+    <string name="blog">VIEW BLOG</string>
+    <string name="blog_not_found_title">Blog not found</string>
+    <string name="blog_not_found_text">This user does not have a blog.</string>
+    <string name="got_it">Got it</string>
+    <string name="link_unavailable">This link could not be opened.</string>
+    <string name="repo_score">%1$s repos</string>
+    <string name="followers_score">%1$s followers</string>
+    <string name="following_score">%1$s following</string>
+    <string name="watchers_score">%1$s watchers</string>
+    <string name="stars_score">%1$s stars</string>
+    <string name="forks_score">%1$s forks</string>
+</resources>
