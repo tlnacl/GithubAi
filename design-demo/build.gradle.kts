@@ -1,4 +1,5 @@
 plugins {
+    alias(libs.plugins.kover)
     id("codex.android-application")
     alias(libs.plugins.kotlin.compose)
 }

@@ -16,3 +16,5 @@ Unit tests: `./gradlew :app:testDebugUnitTest :design-demo:testDebugUnitTest`
 
 Formatting: `./gradlew ktlintFormat`
 Code style check: `./gradlew ktlintCheck` (also included in root `check`)
+
+Coverage: `./gradlew :koverHtmlReportCoverage :koverXmlReportCoverage`. Exclude only view rendering (`@Composable` declarations, Activities and generated UI helpers, and the UI navigation graph); retain ViewModels and other logic.

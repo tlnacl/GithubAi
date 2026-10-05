@@ -54,3 +54,22 @@ the `@Composable` convention.
 ```
 
 The root `check` task also runs `ktlintCheck`.
+
+## Unit test coverage
+
+[Kover](https://github.com/Kotlin/kotlinx-kover) measures debug unit test coverage
+across `app`, `design-demo`, and `core:design-system`. Run:
+
+```sh
+./gradlew :koverHtmlReportCoverage :koverXmlReportCoverage
+```
+
+Open `build/reports/kover/htmlCoverage/index.html` for the combined report.
+The XML report is in `build/reports/kover/reportCoverage.xml`. Reports for individual
+modules are available through their corresponding Kover tasks.
+
+Only view rendering is excluded: declarations annotated with `@Composable`,
+the two `MainActivity` classes and their generated view code, Compose singleton
+classes, and the UI navigation graph. ViewModels, state, actions/events, domain,
+data, typed routes, and other app logic remain included. UI/device tests are not
+part of this host unit test report. No coverage threshold is enforced.

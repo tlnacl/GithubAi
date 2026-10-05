@@ -1,4 +1,5 @@
 [versions]
+kover = "0.9.11"
 ktlint = "1.8.0"
 agp = "9.4.1"
 kotlin = "2.2.21"
@@ -54,6 +55,7 @@ turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 assertk = { module = "com.willowtreeapps.assertk:assertk-jvm", version.ref = "assertk" }
 
 [plugins]
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

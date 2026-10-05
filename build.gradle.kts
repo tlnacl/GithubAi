@@ -2,6 +2,7 @@
 buildscript { dependencies { classpath(libs.javapoet) } }
 
 plugins {
+    alias(libs.plugins.kover)
     base
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.jvm) apply false
@@ -49,4 +50,37 @@ tasks.register<JavaExec>("ktlintFormat") {
 
 tasks.named("check") {
     dependsOn(ktlintCheck)
+}
+
+// Keep exclusions limited to view rendering; ViewModels and other logic stay measured.
+allprojects {
+    plugins.withId("org.jetbrains.kotlinx.kover") {
+        extensions.configure<kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension> {
+            currentProject {
+                createVariant("coverage") {
+                    if (project != rootProject) add("debug")
+                }
+            }
+            reports {
+                filters {
+                    excludes {
+                        annotatedBy("androidx.compose.runtime.Composable")
+                        classes(
+                            "com.tlnacl.githubcompose.MainActivity*",
+                            "com.tlnacl.githubcompose.Hilt_MainActivity*",
+                            "*ComposableSingletons${'$'}*",
+                            "com.tlnacl.githubcompose.feature.github.presentation.GithubNavigationKt",
+                            "com.tlnacl.githubcompose.designdemo.MainActivity*",
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    kover(project(":app"))
+    kover(project(":design-demo"))
+    kover(project(":core:design-system"))
 }
