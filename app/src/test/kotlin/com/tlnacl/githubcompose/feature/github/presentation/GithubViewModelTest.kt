@@ -13,6 +13,7 @@ import com.tlnacl.githubcompose.core.domain.Result
 import com.tlnacl.githubcompose.feature.github.domain.GithubRemoteDataSource
 import com.tlnacl.githubcompose.feature.github.domain.Repo
 import com.tlnacl.githubcompose.feature.github.domain.User
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -34,13 +35,29 @@ private class FakeGithubSource : GithubRemoteDataSource {
         listOf(Repo(1, "Hello", null, 12, 4, 30, "Kotlin", "https://github.com/octocat/Hello")),
     )
     var requestedLogin: String? = null
-    override suspend fun getUsers() = users
+    var usersGate: CompletableDeferred<Unit>? = null
+    var profileGate: CompletableDeferred<Unit>? = null
+    var reposGate: CompletableDeferred<Unit>? = null
+    var usersCalls = 0
+    var profileCalls = 0
+    var reposCalls = 0
+    override suspend fun getUsers(): Result<List<User>, DataError.Network> {
+        usersCalls++
+        usersGate?.await()
+        return users
+    }
     override suspend fun getUser(login: String): Result<User, DataError.Network> {
+        profileCalls++
+        profileGate?.await()
         requestedLogin =
             login
         return profile
     }
-    override suspend fun getRepos(login: String) = repos
+    override suspend fun getRepos(login: String): Result<List<Repo>, DataError.Network> {
+        reposCalls++
+        reposGate?.await()
+        return repos
+    }
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -92,8 +109,7 @@ class GithubViewModelTest {
         source.profile = Result.Error(DataError.Network.NOT_FOUND)
         val vm = ReposViewModel(source, ReposRoute("octocat"))
         assertThat(vm.state.value.userError).isNotNull()
-        assertThat(vm.state.value.isUserLoading).isFalse()
-        assertThat(vm.state.value.isReposLoading).isFalse()
+        assertThat(vm.state.value.isLoading).isFalse()
         assertThat(vm.state.value.repos).hasSize(1)
     }
 
@@ -129,5 +145,73 @@ class GithubViewModelTest {
             vm.onAction(ReposAction.Back)
             assertThat(awaitItem()).isEqualTo(ReposEvent.Back)
         }
+    }
+
+    @Test fun `overlapping user refreshes share request and emit one completion event`() = runTest {
+        val source = FakeGithubSource()
+        val gate = CompletableDeferred<Unit>()
+        source.usersGate = gate
+        val vm = UsersViewModel(source)
+        vm.onAction(UsersAction.Refresh)
+        vm.onAction(UsersAction.Refresh)
+        assertThat(source.usersCalls).isEqualTo(1)
+        assertThat(vm.state.value.isLoading).isTrue()
+        vm.events.test {
+            gate.complete(Unit)
+            assertThat(awaitItem()).isInstanceOf(UsersEvent.ShowSnackbar::class)
+            expectNoEvents()
+        }
+        assertThat(vm.state.value.isLoading).isFalse()
+        source.usersGate = null
+        vm.onAction(UsersAction.Refresh)
+        assertThat(source.usersCalls).isEqualTo(2)
+    }
+
+    @Test fun `overlapping repos refresh shares load and waits for both results`() = runTest {
+        val source = FakeGithubSource()
+        val gate = CompletableDeferred<Unit>()
+        source.profileGate = gate
+        val vm = ReposViewModel(source, ReposRoute("octocat"))
+        assertThat(vm.state.value.isLoading).isTrue()
+        assertThat(vm.state.value.repos).hasSize(0)
+        vm.onAction(ReposAction.Refresh)
+        vm.onAction(ReposAction.Refresh)
+        assertThat(source.profileCalls).isEqualTo(1)
+        assertThat(source.reposCalls).isEqualTo(1)
+        gate.complete(Unit)
+        assertThat(vm.state.value.isLoading).isFalse()
+        source.profileGate = null
+        vm.onAction(ReposAction.Refresh)
+        assertThat(source.profileCalls).isEqualTo(2)
+        assertThat(source.reposCalls).isEqualTo(2)
+    }
+
+    @Test fun `profile remains hidden until slower repositories complete`() = runTest {
+        val source = FakeGithubSource()
+        val gate = CompletableDeferred<Unit>()
+        source.reposGate = gate
+        val vm = ReposViewModel(source, ReposRoute("octocat"))
+        assertThat(source.profileCalls).isEqualTo(1)
+        assertThat(source.reposCalls).isEqualTo(1)
+        assertThat(vm.state.value.user).isNull()
+        assertThat(vm.state.value.isLoading).isTrue()
+        gate.complete(Unit)
+        assertThat(vm.state.value.user?.login).isEqualTo("octocat")
+        assertThat(vm.state.value.repos).hasSize(1)
+        assertThat(vm.state.value.isLoading).isFalse()
+    }
+
+    @Test fun `profile error waits for repositories before publishing both outcomes`() = runTest {
+        val source = FakeGithubSource()
+        source.profile = Result.Error(DataError.Network.NOT_FOUND)
+        val gate = CompletableDeferred<Unit>()
+        source.reposGate = gate
+        val vm = ReposViewModel(source, ReposRoute("octocat"))
+        assertThat(vm.state.value.userError).isNull()
+        assertThat(vm.state.value.repos).hasSize(0)
+        gate.complete(Unit)
+        assertThat(vm.state.value.userError).isNotNull()
+        assertThat(vm.state.value.repos).hasSize(1)
+        assertThat(vm.state.value.isLoading).isFalse()
     }
 }

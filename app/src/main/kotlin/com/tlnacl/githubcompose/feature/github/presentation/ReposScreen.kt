@@ -87,16 +87,13 @@ fun ReposScreen(state: ReposState, onAction: (ReposAction) -> Unit, modifier: Mo
             actions = {
                 TextButton(
                     onClick = { onAction(ReposAction.Refresh) },
-                    enabled =
-                        !state.isUserLoading && !state.isReposLoading,
+                    enabled = !state.isLoading,
                 ) {
                     Text(stringResource(R.string.refresh))
                 }
             },
         )
-        if (state.isUserLoading ||
-            state.isReposLoading
-        ) {
+        if (state.isLoading) {
             LinearProgressIndicator(Modifier.fillMaxWidth())
         }
         LazyColumn {
@@ -104,7 +101,7 @@ fun ReposScreen(state: ReposState, onAction: (ReposAction) -> Unit, modifier: Mo
                 state.userError?.let { ErrorMessage(it, { onAction(ReposAction.Refresh) }) }
                 state.user?.let { ProfileHeader(it, onAction) }
                 state.reposError?.let { ErrorMessage(it, { onAction(ReposAction.Refresh) }) }
-                if (!state.isReposLoading && state.reposError == null && state.repos.isEmpty()) {
+                if (!state.isLoading && state.reposError == null && state.repos.isEmpty()) {
                     Text(stringResource(R.string.no_repos), Modifier.padding(16.dp))
                 }
             }

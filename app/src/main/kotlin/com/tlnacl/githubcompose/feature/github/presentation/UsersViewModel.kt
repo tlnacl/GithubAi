@@ -6,10 +6,10 @@ import com.tlnacl.githubcompose.R
 import com.tlnacl.githubcompose.core.domain.Result
 import com.tlnacl.githubcompose.core.presentation.UiText
 import com.tlnacl.githubcompose.core.presentation.toUiText
+import com.tlnacl.githubcompose.core.util.ControlledRunner
 import com.tlnacl.githubcompose.feature.github.domain.GithubRemoteDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,7 +40,7 @@ class UsersViewModel @Inject constructor(private val source: GithubRemoteDataSou
     val state = _state.asStateFlow()
     private val _events = Channel<UsersEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
-    private var loadJob: Job? = null
+    private val loadRunner = ControlledRunner<Unit>()
     init {
         loadUsers()
     }
@@ -54,26 +54,27 @@ class UsersViewModel @Inject constructor(private val source: GithubRemoteDataSou
         }
     }
     private fun loadUsers() {
-        loadJob?.cancel()
-        loadJob = viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
-            when (val result = source.getUsers()) {
-                is Result.Success -> {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            users = result.data.map { user ->
-                                UserUi(user.login, user.avatarUrl, user.htmlUrl)
-                            },
+        viewModelScope.launch {
+            loadRunner.joinPreviousOrRun {
+                _state.update { it.copy(isLoading = true, error = null) }
+                when (val result = source.getUsers()) {
+                    is Result.Success -> {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                users = result.data.map { user ->
+                                    UserUi(user.login, user.avatarUrl, user.htmlUrl)
+                                },
+                            )
+                        }
+                        _events.send(
+                            UsersEvent.ShowSnackbar(UiText.StringResource(R.string.users_loaded)),
                         )
                     }
-                    _events.send(
-                        UsersEvent.ShowSnackbar(UiText.StringResource(R.string.users_loaded)),
-                    )
-                }
 
-                is Result.Error -> _state.update {
-                    it.copy(isLoading = false, error = result.error.toUiText())
+                    is Result.Error -> _state.update {
+                        it.copy(isLoading = false, error = result.error.toUiText())
+                    }
                 }
             }
         }

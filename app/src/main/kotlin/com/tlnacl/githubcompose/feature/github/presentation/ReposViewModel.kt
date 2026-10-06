@@ -6,47 +6,26 @@ import com.tlnacl.githubcompose.R
 import com.tlnacl.githubcompose.core.domain.Result
 import com.tlnacl.githubcompose.core.presentation.UiText
 import com.tlnacl.githubcompose.core.presentation.toUiText
+import com.tlnacl.githubcompose.core.util.ControlledRunner
 import com.tlnacl.githubcompose.feature.github.domain.GithubRemoteDataSource
+import com.tlnacl.githubcompose.feature.github.domain.Repo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.net.URI
-import java.util.Locale
 import javax.inject.Inject
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class ProfileUi(
-    val login: String,
-    val avatarUrl: String,
-    val name: String,
-    val location: UiText,
-    val blogUrl: String,
-    val htmlUrl: String,
-    val publicRepos: String,
-    val followers: String,
-    val following: String,
-)
-data class RepoUi(
-    val id: Long,
-    val name: String,
-    val description: UiText,
-    val language: UiText,
-    val watchers: String,
-    val stars: String,
-    val forks: String,
-    val htmlUrl: String,
-)
-
 @Stable
 data class ReposState(
     val user: ProfileUi? = null,
     val repos: List<RepoUi> = emptyList(),
-    val isUserLoading: Boolean = false,
-    val isReposLoading: Boolean = false,
+    val isLoading: Boolean = false,
     val userError: UiText? = null,
     val reposError: UiText? = null,
     val showBlogDialog: Boolean = false,
@@ -76,8 +55,7 @@ class ReposViewModel @Inject constructor(
     val state = _state.asStateFlow()
     private val _events = Channel<ReposEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
-    private var profileJob: Job? = null
-    private var reposJob: Job? = null
+    private val loadRunner = ControlledRunner<Unit>()
     init {
         load()
     }
@@ -120,66 +98,40 @@ class ReposViewModel @Inject constructor(
         if (valid) emit(ReposEvent.OpenUrl(url)) else onAction(ReposAction.LinkUnavailable)
     }
     private fun load() {
-        profileJob?.cancel()
-        reposJob?.cancel()
-        profileJob = viewModelScope.launch {
-            _state.update { it.copy(isUserLoading = true, userError = null) }
-            when (val result = source.getUser(login)) {
-                is Result.Success -> {
-                    val user = result.data
-                    _state.update {
-                        it.copy(
-                            isUserLoading = false,
-                            user = ProfileUi(
-                                user.login,
-                                user.avatarUrl,
-                                user.name.ifBlank { user.login },
-                                user.location?.takeIf(
-                                    String::isNotBlank,
-                                )?.let(UiText::DynamicString)
-                                    ?: UiText.StringResource(R.string.location_not_defined),
-                                user.blogUrl,
-                                user.htmlUrl,
-                                user.publicRepos.toString(),
-                                user.followers.toString(),
-                                user.following.toString(),
-                            ),
-                        )
-                    }
-                }
-
-                is Result.Error -> _state.update {
-                    it.copy(isUserLoading = false, userError = result.error.toUiText())
-                }
-            }
-        }
-        reposJob = viewModelScope.launch {
-            _state.update { it.copy(isReposLoading = true, reposError = null) }
-            when (val result = source.getRepos(login)) {
-                is Result.Success -> _state.update {
+        viewModelScope.launch {
+            loadRunner.joinPreviousOrRun {
+                _state.update {
                     it.copy(
-                        isReposLoading = false,
-                        repos = result.data.map { repo ->
-                            RepoUi(
-                                repo.id,
-                                repo.name,
-                                repo.description?.let(UiText::DynamicString)
-                                    ?: UiText.StringResource(R.string.no_description),
-                                repo.language?.uppercase(
-                                    Locale.getDefault(),
-                                )?.let(UiText::DynamicString)
-                                    ?: UiText.StringResource(R.string.language_not_defined),
-                                repo.watchersCount.toString(),
-                                repo.stargazersCount.toString(),
-                                repo.forksCount.toString(),
-                                repo.htmlUrl,
-                            )
-                        },
+                        isLoading = true,
+                        userError = null,
+                        reposError = null,
                     )
                 }
-
-                is Result.Error -> _state.update {
-                    it.copy(isReposLoading = false, reposError = result.error.toUiText())
+                val (userResult, reposResult) = coroutineScope {
+                    val user = async { source.getUser(login) }
+                    val repos = async { source.getRepos(login) }
+                    user.await() to repos.await()
+                }
+                _state.update { current ->
+                    current.copy(
+                        isLoading = false,
+                        user = when (userResult) {
+                            is Result.Success -> userResult.data.toProfileUi()
+                            is Result.Error -> current.user
+                        },
+                        repos = when (reposResult) {
+                            is Result.Success -> reposResult.data.map(Repo::toRepoUi)
+                            is Result.Error -> current.repos
+                        },
+                        userError = when (userResult) {
+                            is Result.Success -> null
+                            is Result.Error -> userResult.error.toUiText()
+                        },
+                        reposError = when (reposResult) {
+                            is Result.Success -> null
+                            is Result.Error -> reposResult.error.toUiText()
+                        },
+                    )
                 }
             }
         }
