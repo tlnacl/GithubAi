@@ -17,6 +17,7 @@ android {
     productFlavors {
         create("qa") {
             dimension = "environment"
+            minSdk = 26
             applicationIdSuffix = ".qa"
             versionNameSuffix = "-qa"
             // Replace with the QA backend URL when it is available. Keep the trailing slash.
@@ -29,6 +30,16 @@ android {
     }
 }
 dependencies {
+    // Tapadoo uses Material icons but omits their runtime dependency.
+    "qaImplementation"(libs.androidx.compose.material.icons.core)
+    // JitPack publishes classified AARs; select the active menu for all QA build types.
+    "qaImplementation"(libs.tapadoo.debug.menu) {
+        artifact {
+            classifier = "debug"
+            type = "aar"
+            extension = "aar"
+        }
+    }
     implementation(project(":core:design-system"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)

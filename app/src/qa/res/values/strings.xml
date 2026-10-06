@@ -1,0 +1,7 @@
+<resources>
+    <string name="debug_app_title">App</string>
+    <string name="debug_environment">Environment: %1$s</string>
+    <string name="debug_version">Version: %1$s (%2$d)</string>
+    <string name="debug_application_id">Application ID: %1$s</string>
+    <string name="debug_api_url">API URL: %1$s</string>
+</resources>

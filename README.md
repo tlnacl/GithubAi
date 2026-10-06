@@ -30,6 +30,20 @@ Both initially use `https://api.github.com/`. Change the QA flavor's
 keep the trailing slash. The Ktor client reads `BuildConfig.API_BASE_URL`.
 The environment is selected at build time.
 
+## QA debug menu
+
+[Tapadoo DebugMenu](https://github.com/Tapadoo/DebugMenu) is available only in
+`qaDebug` and `qaRelease`. Tap its floating wrench button to view the environment,
+app version, application ID, and API base URL. Shake-to-open is disabled.
+The menu reports the URL selected at build time; it does not switch backends.
+
+The dependency and menu implementation live only in the QA flavor. Production
+uses an empty composable and does not package Tapadoo DebugMenu. QA requires
+Android 8.0 (API 26) to match the library; production still supports API 24.
+The version catalog pins version `1.0.6`, using the published `debug` AAR classifier
+to keep the menu active in QA release builds. JitPack is restricted to the
+`com.github.Tapadoo` dependency group.
+
 ## Validation
 
 Debug APKs build on AGP 9.4.1 and Gradle 9.6.0. Unit tests cover GitHub data/ViewModel behavior and gallery theme restoration/button events. Device/emulator UI checks have not been run.
