@@ -29,7 +29,7 @@ object HttpClientFactory {
                         Timber.tag("HttpClient").d(message)
                     }
                 }
-                level = LogLevel.INFO
+                level = LogLevel.BODY
             }
         }
         install(ContentNegotiation) {
