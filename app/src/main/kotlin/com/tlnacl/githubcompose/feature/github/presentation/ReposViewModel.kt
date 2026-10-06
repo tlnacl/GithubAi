@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @Stable
 data class ReposState(
@@ -57,6 +58,7 @@ class ReposViewModel @Inject constructor(
     val events = _events.receiveAsFlow()
     private val loadRunner = ControlledRunner<Unit>()
     init {
+        Timber.d("userLogin: %s", login)
         load()
     }
     fun onAction(action: ReposAction) {

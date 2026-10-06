@@ -30,6 +30,14 @@ Both initially use `https://api.github.com/`. Change the QA flavor's
 keep the trailing slash. The Ktor client reads `BuildConfig.API_BASE_URL`.
 The environment is selected at build time.
 
+## Logging
+
+Timber logging from the original app is restored in debug builds: the Application
+plants a `DebugTree`, Ktor HTTP request/response summaries use the `HttpClient` tag at
+`INFO` level, and opening a user's repositories logs `userLogin`.
+The Ktor client uses its CIO engine. Release builds do not plant a logging tree
+or install the Ktor Logging plugin.
+
 ## QA debug menu
 
 [Tapadoo DebugMenu](https://github.com/Tapadoo/DebugMenu) is available only in
