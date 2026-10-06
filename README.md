@@ -20,13 +20,23 @@ Browse public GitHub users, open a user profile and repositories, view repositor
 The remaining Android skills live in `.agents/skills`; `AGENTS.md` applies them to future changes. Feature layers use packages inside `app` rather than separate Gradle modules.
 The app uses public, unauthenticated GitHub endpoints, so GitHub rate limits apply. Like the old app, it displays the first API page.
 
+## Backend environments
+
+The product app has `qa` and `prod` flavors. Select `qaDebug` or `prodDebug` in
+Android Studio's Build Variants panel. QA uses application ID
+`com.tlnacl.githubcompose.qa`, so it can be installed alongside production.
+Both initially use `https://api.github.com/`. Change the QA flavor's
+`API_BASE_URL` in `app/build.gradle.kts` when a separate backend is available;
+keep the trailing slash. The Ktor client reads `BuildConfig.API_BASE_URL`.
+The environment is selected at build time.
+
 ## Validation
 
-Both debug APKs build on AGP 9.4.1 and Gradle 9.6.0. Unit tests cover GitHub data/ViewModel behavior and gallery theme restoration/button events. Device/emulator UI checks have not been run.
+Debug APKs build on AGP 9.4.1 and Gradle 9.6.0. Unit tests cover GitHub data/ViewModel behavior and gallery theme restoration/button events. Device/emulator UI checks have not been run.
 
 ```sh
-./gradlew :app:assembleDebug :design-demo:assembleDebug
-./gradlew :app:testDebugUnitTest :design-demo:testDebugUnitTest
+./gradlew :app:assembleQaDebug :app:assembleProdDebug :design-demo:assembleDebug
+./gradlew :app:testQaDebugUnitTest :app:testProdDebugUnitTest :design-demo:testDebugUnitTest
 ```
 
 The migration raises the minimum Android version from 21 to 24 to match the Codex starter and current UI dependencies, and targets SDK 36.
@@ -58,7 +68,8 @@ The root `check` task also runs `ktlintCheck`.
 ## Unit test coverage
 
 [Kover](https://github.com/Kotlin/kotlinx-kover) measures debug unit test coverage
-across `app`, `design-demo`, and `core:design-system`. Run:
+across `app` (`prodDebug`), `design-demo`, and `core:design-system`.
+QA runs the same app tests separately using `:app:testQaDebugUnitTest`. Run:
 
 ```sh
 ./gradlew :koverHtmlReportCoverage :koverXmlReportCoverage

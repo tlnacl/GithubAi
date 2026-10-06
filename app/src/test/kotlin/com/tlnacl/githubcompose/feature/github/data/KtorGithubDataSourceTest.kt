@@ -4,6 +4,7 @@ import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
+import com.tlnacl.githubcompose.BuildConfig
 import com.tlnacl.githubcompose.core.data.HttpClientFactory
 import com.tlnacl.githubcompose.core.domain.DataError
 import com.tlnacl.githubcompose.core.domain.Result
@@ -50,7 +51,7 @@ class KtorGithubDataSourceTest {
         val engine = MockEngine { request ->
             assertThat(
                 request.url.toString(),
-            ).isEqualTo("https://api.github.com/users/octocat/repos")
+            ).isEqualTo("${BuildConfig.API_BASE_URL}users/octocat/repos")
             respond(
                 """[{"id":1,"name":"Hello","stargazers_count":30,"forks_count":4}]""",
                 headers = headersOf(HttpHeaders.ContentType, "application/json"),

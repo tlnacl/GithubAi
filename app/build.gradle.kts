@@ -7,10 +7,25 @@ plugins {
 }
 android {
     namespace = "com.tlnacl.githubcompose"
+    buildFeatures { buildConfig = true }
     defaultConfig {
         applicationId = "com.tlnacl.githubcompose"
         versionCode = 1
         versionName = "1.0"
+    }
+    flavorDimensions += "environment"
+    productFlavors {
+        create("qa") {
+            dimension = "environment"
+            applicationIdSuffix = ".qa"
+            versionNameSuffix = "-qa"
+            // Replace with the QA backend URL when it is available. Keep the trailing slash.
+            buildConfigField("String", "API_BASE_URL", "\"https://api.github.com/\"")
+        }
+        create("prod") {
+            dimension = "environment"
+            buildConfigField("String", "API_BASE_URL", "\"https://api.github.com/\"")
+        }
     }
 }
 dependencies {

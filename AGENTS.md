@@ -11,8 +11,8 @@ Collect state with lifecycle awareness. Preserve cancellation and convert expect
 Shared app utilities live in `app/core` packages. Keep `:core:design-system` independent of app/domain/data code; `:app` and `:design-demo` both consume it. The demo app is a standalone component gallery.
 Use version catalog dependencies and the convention plugins in `build-logic` for shared Gradle configuration.
 
-Build: `./gradlew :app:assembleDebug :design-demo:assembleDebug`
-Unit tests: `./gradlew :app:testDebugUnitTest :design-demo:testDebugUnitTest`
+Build: `./gradlew :app:assembleQaDebug :app:assembleProdDebug :design-demo:assembleDebug`
+Unit tests: `./gradlew :app:testQaDebugUnitTest :app:testProdDebugUnitTest :design-demo:testDebugUnitTest`
 
 Formatting: `./gradlew ktlintFormat`
 Code style check: `./gradlew ktlintCheck` (also included in root `check`)

@@ -1,4 +1,5 @@
 package com.tlnacl.githubcompose.core.data
+import com.tlnacl.githubcompose.BuildConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,7 +31,7 @@ object HttpClientFactory {
             connectTimeoutMillis = 10_000
         }
         defaultRequest {
-            url("https://api.github.com/")
+            url(BuildConfig.API_BASE_URL)
             header("Accept", "application/vnd.github+json")
             header("X-GitHub-Api-Version", "2022-11-28")
             header("User-Agent", "GithubCompose")

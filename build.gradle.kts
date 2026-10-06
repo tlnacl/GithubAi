@@ -58,7 +58,9 @@ allprojects {
         extensions.configure<kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension> {
             currentProject {
                 createVariant("coverage") {
-                    if (project != rootProject) add("debug")
+                    if (project != rootProject) {
+                        add(if (project.path == ":app") "prodDebug" else "debug")
+                    }
                 }
             }
             reports {
