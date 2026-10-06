@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.request.url
 import io.ktor.http.appendPathSegments
 import javax.inject.Inject
@@ -15,6 +16,10 @@ import javax.inject.Singleton
 
 class KtorGithubDataSource @Inject constructor(private val client: HttpClient) :
     GithubRemoteDataSource {
+    override suspend fun searchUsers(query: String) = safeCall<UserSearchDto> {
+        client.get("search/users") { parameter("q", query) }
+    }.map { response -> response.items.map(UserDto::toUser) }
+
     override suspend fun getUsers() = safeCall<List<UserDto>> { client.get("users") }
         .map { users -> users.map(UserDto::toUser) }
     override suspend fun getUser(login: String) = safeCall<UserDto> {

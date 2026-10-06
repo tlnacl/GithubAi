@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">GithubCompose</string>
 
+    <string name="search_users">Search GitHub users</string>
     <string name="users_title">GitHub Users</string>
     <string name="users_header">Users from public GitHub API</string>
     <string name="users_loaded">Users are loaded.</string>

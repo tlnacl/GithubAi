@@ -17,7 +17,9 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.jupiter.api.AfterEach
@@ -34,6 +36,19 @@ private class FakeGithubSource : GithubRemoteDataSource {
     var repos: Result<List<Repo>, DataError.Network> = Result.Success(
         listOf(Repo(1, "Hello", null, 12, 4, 30, "Kotlin", "https://github.com/octocat/Hello")),
     )
+    val searchQueries = mutableListOf<String>()
+    var searchGate: CompletableDeferred<Unit>? = null
+    var cancelledSearches = 0
+    override suspend fun searchUsers(query: String): Result<List<User>, DataError.Network> {
+        searchQueries.add(query)
+        try {
+            searchGate?.await()
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            cancelledSearches++
+            throw e
+        }
+        return users
+    }
     var requestedLogin: String? = null
     var usersGate: CompletableDeferred<Unit>? = null
     var profileGate: CompletableDeferred<Unit>? = null
@@ -94,6 +109,93 @@ class GithubViewModelTest {
             vm.onAction(UsersAction.SelectUser("octocat"))
             assertThat(awaitItem()).isEqualTo(UsersEvent.NavigateToRepos("octocat"))
         }
+    }
+
+    @Test fun `search waits one second after latest keystroke`() = runTest {
+        val source = FakeGithubSource()
+        val vm = UsersViewModel(source)
+        vm.onAction(UsersAction.SearchQueryChanged("oct"))
+        advanceTimeBy(999)
+        runCurrent()
+        assertThat(source.searchQueries).hasSize(0)
+        vm.onAction(UsersAction.SearchQueryChanged("octocat"))
+        advanceTimeBy(999)
+        runCurrent()
+        assertThat(source.searchQueries).hasSize(0)
+        advanceTimeBy(1)
+        runCurrent()
+        assertThat(source.searchQueries).isEqualTo(listOf("octocat"))
+        assertThat(vm.state.value.users.single().login).isEqualTo("octocat")
+        assertThat(vm.state.value.isLoading).isFalse()
+    }
+
+    @Test fun `loading waits for debounce while existing results remain`() = runTest {
+        val source = FakeGithubSource()
+        val vm = UsersViewModel(source)
+        source.searchGate = CompletableDeferred()
+        vm.onAction(UsersAction.SearchQueryChanged("android"))
+        runCurrent()
+        assertThat(vm.state.value.isLoading).isFalse()
+        assertThat(vm.state.value.users.single().login).isEqualTo("octocat")
+        advanceTimeBy(999)
+        runCurrent()
+        assertThat(vm.state.value.isLoading).isFalse()
+        assertThat(source.searchQueries).hasSize(0)
+        advanceTimeBy(1)
+        runCurrent()
+        assertThat(vm.state.value.isLoading).isTrue()
+        assertThat(source.searchQueries).isEqualTo(listOf("android"))
+        source.searchGate?.complete(Unit)
+        runCurrent()
+        assertThat(vm.state.value.isLoading).isFalse()
+    }
+
+    @Test fun `typing cancels an in flight search before the next debounce`() = runTest {
+        val source = FakeGithubSource()
+        val vm = UsersViewModel(source)
+        source.searchGate = CompletableDeferred()
+        vm.onAction(UsersAction.SearchQueryChanged("old"))
+        advanceTimeBy(1_000)
+        runCurrent()
+        vm.onAction(UsersAction.SearchQueryChanged("new"))
+        runCurrent()
+        assertThat(source.cancelledSearches).isEqualTo(1)
+        assertThat(vm.state.value.isLoading).isFalse()
+        source.searchGate = null
+        source.users = Result.Success(listOf(User("new", "", "")))
+        advanceTimeBy(1_000)
+        runCurrent()
+        assertThat(vm.state.value.users.single().login).isEqualTo("new")
+    }
+
+    @Test fun `clearing search restores default users and cancels pending search`() = runTest {
+        val source = FakeGithubSource()
+        val vm = UsersViewModel(source)
+        vm.onAction(UsersAction.SearchQueryChanged("oct"))
+        advanceTimeBy(500)
+        vm.onAction(UsersAction.SearchQueryChanged(""))
+        runCurrent()
+        advanceTimeBy(1_000)
+        runCurrent()
+        assertThat(source.searchQueries).hasSize(0)
+        assertThat(source.usersCalls).isEqualTo(2)
+        assertThat(vm.state.value.users.single().login).isEqualTo("octocat")
+    }
+
+    @Test fun `search failure retries current trimmed query immediately`() = runTest {
+        val source = FakeGithubSource()
+        val vm = UsersViewModel(source)
+        source.users = Result.Error(DataError.Network.NO_INTERNET)
+        vm.onAction(UsersAction.SearchQueryChanged(" android "))
+        advanceTimeBy(1_000)
+        runCurrent()
+        assertThat(vm.state.value.error).isNotNull()
+        source.users = Result.Success(emptyList())
+        vm.onAction(UsersAction.Refresh)
+        runCurrent()
+        assertThat(source.searchQueries).isEqualTo(listOf("android", "android"))
+        assertThat(vm.state.value.error).isNull()
+        assertThat(vm.state.value.users).hasSize(0)
     }
 
     @Test fun `repos use typed route login and format UI counters`() = runTest {

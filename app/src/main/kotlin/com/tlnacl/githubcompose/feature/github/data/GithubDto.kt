@@ -5,6 +5,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+internal data class UserSearchDto(val items: List<UserDto>)
+
+@Serializable
 internal data class UserDto(
     val login: String,
     @SerialName("avatar_url") val avatarUrl: String = "",

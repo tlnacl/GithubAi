@@ -12,6 +12,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -68,10 +69,16 @@ fun UsersScreen(state: UsersState, onAction: (UsersAction) -> Unit, modifier: Mo
                 }
             },
         )
+        OutlinedTextField(
+            value = state.searchQuery,
+            onValueChange = { onAction(UsersAction.SearchQueryChanged(it)) },
+            label = { Text(stringResource(R.string.search_users)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        )
         if (state.isLoading) LinearProgressIndicator(Modifier.fillMaxWidth())
         state.error?.let { ErrorMessage(it, { onAction(UsersAction.Refresh) }) }
         LazyColumn {
-            item { Text(stringResource(R.string.users_header), Modifier.padding(16.dp)) }
             if (!state.isLoading && state.error == null && state.users.isEmpty()) {
                 item { Text(stringResource(R.string.no_users), Modifier.padding(16.dp)) }
             }

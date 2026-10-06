@@ -24,6 +24,7 @@ data class Repo(
     val htmlUrl: String,
 )
 interface GithubRemoteDataSource {
+    suspend fun searchUsers(query: String): Result<List<User>, DataError.Network>
     suspend fun getUsers(): Result<List<User>, DataError.Network>
     suspend fun getUser(login: String): Result<User, DataError.Network>
     suspend fun getRepos(login: String): Result<List<Repo>, DataError.Network>

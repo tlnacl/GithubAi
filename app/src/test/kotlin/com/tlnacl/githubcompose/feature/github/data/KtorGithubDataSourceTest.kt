@@ -37,6 +37,35 @@ class KtorGithubDataSourceTest {
         }
     }
 
+    @Test fun `search sends encoded query and maps response items`() = runTest {
+        val engine = MockEngine { request ->
+            assertThat(request.url.encodedPath).isEqualTo("/search/users")
+            assertThat(request.url.parameters["q"]).isEqualTo("android location:New Zealand")
+            respond(
+                """{"total_count":1,"incomplete_results":false,"items":[{"login":"android","avatar_url":"avatar","html_url":"profile"}]}""",
+                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+            )
+        }
+        HttpClientFactory.create(engine).use { client ->
+            val result = KtorGithubDataSource(client).searchUsers("android location:New Zealand")
+                as Result.Success<List<User>>
+            assertThat(result.data.single()).isEqualTo(User("android", "avatar", "profile"))
+        }
+    }
+
+    @Test fun `empty search results and search failures are handled`() = runTest {
+        HttpClientFactory.create(engine("""{"items":[]}""")).use { client ->
+            val result = KtorGithubDataSource(
+                client,
+            ).searchUsers("missing") as Result.Success<List<User>>
+            assertThat(result.data).isEmpty()
+        }
+        HttpClientFactory.create(engine("{}", HttpStatusCode.Forbidden)).use { client ->
+            assertThat(KtorGithubDataSource(client).searchUsers("android"))
+                .isEqualTo(Result.Error(DataError.Network.FORBIDDEN))
+        }
+    }
+
     @Test fun `profile allows null name and blog`() = runTest {
         HttpClientFactory.create(
             engine("""{"login":"octocat","name":null,"blog":null,"public_repos":8}"""),
