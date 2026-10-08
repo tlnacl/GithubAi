@@ -1,4 +1,4 @@
-package com.tlnacl.githubcompose.feature.github.presentation
+package com.tlnacl.githubcompose.feature.github.presentation.users
 
 import com.tlnacl.githubcompose.feature.github.domain.User
 

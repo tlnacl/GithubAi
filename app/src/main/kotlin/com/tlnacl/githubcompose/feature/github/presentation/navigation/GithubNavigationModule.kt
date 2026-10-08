@@ -1,4 +1,4 @@
-package com.tlnacl.githubcompose.feature.github.presentation
+package com.tlnacl.githubcompose.feature.github.presentation.navigation
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.toRoute

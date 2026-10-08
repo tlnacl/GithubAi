@@ -13,6 +13,13 @@ import com.tlnacl.githubcompose.core.domain.Result
 import com.tlnacl.githubcompose.feature.github.domain.GithubRemoteDataSource
 import com.tlnacl.githubcompose.feature.github.domain.Repo
 import com.tlnacl.githubcompose.feature.github.domain.User
+import com.tlnacl.githubcompose.feature.github.presentation.navigation.ReposRoute
+import com.tlnacl.githubcompose.feature.github.presentation.repos.ReposAction
+import com.tlnacl.githubcompose.feature.github.presentation.repos.ReposEvent
+import com.tlnacl.githubcompose.feature.github.presentation.repos.ReposViewModel
+import com.tlnacl.githubcompose.feature.github.presentation.users.UsersAction
+import com.tlnacl.githubcompose.feature.github.presentation.users.UsersEvent
+import com.tlnacl.githubcompose.feature.github.presentation.users.UsersViewModel
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

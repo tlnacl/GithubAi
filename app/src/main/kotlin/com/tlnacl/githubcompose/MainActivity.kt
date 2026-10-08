@@ -9,8 +9,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.tlnacl.githubcompose.core.debug.AppDebugMenu
 import com.tlnacl.githubcompose.core.designsystem.GithubComposeTheme
-import com.tlnacl.githubcompose.feature.github.presentation.UsersRoute
-import com.tlnacl.githubcompose.feature.github.presentation.githubGraph
+import com.tlnacl.githubcompose.feature.github.presentation.navigation.UsersRoute
+import com.tlnacl.githubcompose.feature.github.presentation.navigation.githubGraph
 import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

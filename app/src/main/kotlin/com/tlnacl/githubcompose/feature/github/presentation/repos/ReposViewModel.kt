@@ -1,4 +1,4 @@
-package com.tlnacl.githubcompose.feature.github.presentation
+package com.tlnacl.githubcompose.feature.github.presentation.repos
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,6 +9,7 @@ import com.tlnacl.githubcompose.core.presentation.toUiText
 import com.tlnacl.githubcompose.core.util.ControlledRunner
 import com.tlnacl.githubcompose.feature.github.domain.GithubRemoteDataSource
 import com.tlnacl.githubcompose.feature.github.domain.Repo
+import com.tlnacl.githubcompose.feature.github.presentation.navigation.ReposRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.net.URI
 import javax.inject.Inject

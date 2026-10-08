@@ -1,4 +1,4 @@
-package com.tlnacl.githubcompose.feature.github.presentation
+package com.tlnacl.githubcompose.feature.github.presentation.users
 
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel

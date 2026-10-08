@@ -1,4 +1,4 @@
-package com.tlnacl.githubcompose.feature.github.presentation
+package com.tlnacl.githubcompose.feature.github.presentation.repos
 
 import com.tlnacl.githubcompose.R
 import com.tlnacl.githubcompose.core.presentation.UiText

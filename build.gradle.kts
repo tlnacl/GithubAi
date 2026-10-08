@@ -71,7 +71,7 @@ allprojects {
                             "com.tlnacl.githubcompose.MainActivity*",
                             "com.tlnacl.githubcompose.Hilt_MainActivity*",
                             "*ComposableSingletons${'$'}*",
-                            "com.tlnacl.githubcompose.feature.github.presentation.GithubNavigationKt",
+                            "com.tlnacl.githubcompose.feature.github.presentation.navigation.GithubNavigationKt",
                             "com.tlnacl.githubcompose.designdemo.MainActivity*",
                         )
                     }
