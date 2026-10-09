@@ -20,4 +20,5 @@
     <string name="secondary_action">Secondary action</string>
     <string name="disabled_action">Disabled action</string>
     <string name="action_feedback">Button interaction works.</string>
+    <string name="user_rows">User rows and favorites</string>
 </resources>

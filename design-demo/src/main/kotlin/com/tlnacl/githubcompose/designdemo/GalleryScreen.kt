@@ -41,6 +41,7 @@ import androidx.lifecycle.viewModelScope
 import com.tlnacl.githubcompose.core.designsystem.Avatar
 import com.tlnacl.githubcompose.core.designsystem.GithubComposeTheme
 import com.tlnacl.githubcompose.core.designsystem.Loading
+import com.tlnacl.githubcompose.core.designsystem.UserRow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -168,6 +169,33 @@ fun GalleryScreen(
                     stringResource(R.string.avatar_note),
                     style = MaterialTheme.typography.bodyMedium,
                 )
+            }
+        }
+        item {
+            GallerySection(stringResource(R.string.user_rows)) {
+                UserRow(
+                    "octocat",
+                    "",
+                    "https://github.com/octocat",
+                    false,
+                    false,
+                    {
+                        onAction(GalleryAction.ClickSample)
+                    },
+                    { onAction(GalleryAction.ClickSample) },
+                )
+                UserRow(
+                    "a-long-user-login-for-layout-review",
+                    "",
+                    "https://github.com/a-long-user-login-for-layout-review",
+                    true,
+                    false,
+                    {
+                        onAction(GalleryAction.ClickSample)
+                    },
+                    { onAction(GalleryAction.ClickSample) },
+                )
+                UserRow("saving-user", "", "https://github.com/saving-user", false, true, {}, {})
             }
         }
         item {

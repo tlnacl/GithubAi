@@ -1,1 +1,3 @@
-<resources><string name="avatar_description">Avatar of %1$s</string></resources>
+<resources><string name="avatar_description">Avatar of %1$s</string>    <string name="add_favorite">Add %1$s to favorites</string>
+    <string name="remove_favorite">Remove %1$s from favorites</string>
+</resources>

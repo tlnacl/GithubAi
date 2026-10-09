@@ -38,4 +38,9 @@
     <string name="retry">Retry</string>
     <string name="loading">Loading</string>
     <string name="avatar_description">Avatar of %1$s</string>
+    <string name="home">Home</string>
+    <string name="favorite">Favorite</string>
+    <string name="setting">Setting</string>
+    <string name="no_favorites">No favorite users yet. Tap a heart in Home to save one.</string>
+    <string name="settings_coming_soon">Settings are coming soon.</string>
 </resources>

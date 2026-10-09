@@ -10,6 +10,8 @@ import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import com.tlnacl.githubcompose.core.domain.DataError
 import com.tlnacl.githubcompose.core.domain.Result
+import com.tlnacl.githubcompose.feature.github.FakeFavorites
+import com.tlnacl.githubcompose.feature.github.domain.FavoriteUser
 import com.tlnacl.githubcompose.feature.github.domain.GithubRemoteDataSource
 import com.tlnacl.githubcompose.feature.github.domain.Repo
 import com.tlnacl.githubcompose.feature.github.domain.User
@@ -93,7 +95,7 @@ class GithubViewModelTest {
     }
 
     @Test fun `users map into loaded UI state`() = runTest {
-        val vm = UsersViewModel(FakeGithubSource())
+        val vm = UsersViewModel(FakeGithubSource(), FakeFavorites())
         assertThat(vm.state.value.isLoading).isFalse()
         assertThat(vm.state.value.users.single().login).isEqualTo("octocat")
     }
@@ -101,7 +103,7 @@ class GithubViewModelTest {
     @Test fun `retry clears users error and loads results`() = runTest {
         val source = FakeGithubSource()
         source.users = Result.Error(DataError.Network.NO_INTERNET)
-        val vm = UsersViewModel(source)
+        val vm = UsersViewModel(source, FakeFavorites())
         assertThat(vm.state.value.error).isNotNull()
         source.users = Result.Success(listOf(User("android", "", "")))
         vm.onAction(UsersAction.Refresh)
@@ -110,7 +112,7 @@ class GithubViewModelTest {
     }
 
     @Test fun `select user emits navigation event`() = runTest {
-        val vm = UsersViewModel(FakeGithubSource())
+        val vm = UsersViewModel(FakeGithubSource(), FakeFavorites())
         vm.events.test {
             assertThat(awaitItem()).isInstanceOf(UsersEvent.ShowSnackbar::class)
             vm.onAction(UsersAction.SelectUser("octocat"))
@@ -120,7 +122,7 @@ class GithubViewModelTest {
 
     @Test fun `search waits one second after latest keystroke`() = runTest {
         val source = FakeGithubSource()
-        val vm = UsersViewModel(source)
+        val vm = UsersViewModel(source, FakeFavorites())
         vm.onAction(UsersAction.SearchQueryChanged("oct"))
         advanceTimeBy(999)
         runCurrent()
@@ -138,7 +140,7 @@ class GithubViewModelTest {
 
     @Test fun `loading waits for debounce while existing results remain`() = runTest {
         val source = FakeGithubSource()
-        val vm = UsersViewModel(source)
+        val vm = UsersViewModel(source, FakeFavorites())
         source.searchGate = CompletableDeferred()
         vm.onAction(UsersAction.SearchQueryChanged("android"))
         runCurrent()
@@ -159,7 +161,7 @@ class GithubViewModelTest {
 
     @Test fun `typing cancels an in flight search before the next debounce`() = runTest {
         val source = FakeGithubSource()
-        val vm = UsersViewModel(source)
+        val vm = UsersViewModel(source, FakeFavorites())
         source.searchGate = CompletableDeferred()
         vm.onAction(UsersAction.SearchQueryChanged("old"))
         advanceTimeBy(1_000)
@@ -177,7 +179,7 @@ class GithubViewModelTest {
 
     @Test fun `clearing search restores default users and cancels pending search`() = runTest {
         val source = FakeGithubSource()
-        val vm = UsersViewModel(source)
+        val vm = UsersViewModel(source, FakeFavorites())
         vm.onAction(UsersAction.SearchQueryChanged("oct"))
         advanceTimeBy(500)
         vm.onAction(UsersAction.SearchQueryChanged(""))
@@ -191,7 +193,7 @@ class GithubViewModelTest {
 
     @Test fun `search failure retries current trimmed query immediately`() = runTest {
         val source = FakeGithubSource()
-        val vm = UsersViewModel(source)
+        val vm = UsersViewModel(source, FakeFavorites())
         source.users = Result.Error(DataError.Network.NO_INTERNET)
         vm.onAction(UsersAction.SearchQueryChanged(" android "))
         advanceTimeBy(1_000)
@@ -203,6 +205,55 @@ class GithubViewModelTest {
         assertThat(source.searchQueries).isEqualTo(listOf("android", "android"))
         assertThat(vm.state.value.error).isNull()
         assertThat(vm.state.value.users).hasSize(0)
+    }
+
+    @Test fun `favorite updates synchronize hearts without another network request`() = runTest {
+        val source = FakeGithubSource()
+        val favorites = FakeFavorites()
+        val vm = UsersViewModel(source, favorites)
+        vm.onAction(UsersAction.ToggleFavorite(vm.state.value.users.single()))
+        assertThat(vm.state.value.users.single().isFavorite).isTrue()
+        assertThat(source.usersCalls).isEqualTo(1)
+        favorites.setFavorite(FavoriteUser("octocat", "", ""), false)
+        assertThat(vm.state.value.users.single().isFavorite).isFalse()
+    }
+
+    @Test fun `pending heart ignores repeated taps and failure preserves saved state`() = runTest {
+        val favorites = FakeFavorites()
+        favorites.writeGate = CompletableDeferred()
+        favorites.writeError = DataError.Local.DISK_FULL
+        val vm = UsersViewModel(FakeGithubSource(), favorites)
+        val user = vm.state.value.users.single()
+        vm.onAction(UsersAction.ToggleFavorite(user))
+        vm.onAction(UsersAction.ToggleFavorite(user))
+        assertThat(favorites.writes).isEqualTo(1)
+        assertThat(vm.state.value.pendingFavorites).isEqualTo(setOf("octocat"))
+        vm.events.test {
+            awaitItem() // Initial default-list completion.
+            favorites.writeGate?.complete(Unit)
+            assertThat(awaitItem()).isInstanceOf(UsersEvent.ShowSnackbar::class)
+        }
+        assertThat(vm.state.value.users.single().isFavorite).isFalse()
+        assertThat(vm.state.value.pendingFavorites).hasSize(0)
+    }
+
+    @Test fun `search favorites stay current and observation can retry`() = runTest {
+        val favorites = FakeFavorites()
+        val source = FakeGithubSource()
+        val vm = UsersViewModel(source, favorites)
+        vm.onAction(UsersAction.SearchQueryChanged("octocat"))
+        favorites.setFavorite(FavoriteUser("Octocat", "", ""), true)
+        advanceTimeBy(1_000)
+        runCurrent()
+        assertThat(vm.state.value.users.single().isFavorite).isTrue()
+        favorites.results.value = Result.Error(DataError.Local.UNKNOWN)
+        assertThat(vm.state.value.favoritesError).isNotNull()
+        assertThat(vm.state.value.users).hasSize(1)
+        vm.onAction(UsersAction.RetryFavorites)
+        assertThat(favorites.observations).isEqualTo(2)
+        favorites.results.value = Result.Success(emptyList())
+        assertThat(vm.state.value.favoritesError).isNull()
+        assertThat(vm.state.value.users.single().isFavorite).isFalse()
     }
 
     @Test fun `repos use typed route login and format UI counters`() = runTest {
@@ -260,7 +311,7 @@ class GithubViewModelTest {
         val source = FakeGithubSource()
         val gate = CompletableDeferred<Unit>()
         source.usersGate = gate
-        val vm = UsersViewModel(source)
+        val vm = UsersViewModel(source, FakeFavorites())
         vm.onAction(UsersAction.Refresh)
         vm.onAction(UsersAction.Refresh)
         assertThat(source.usersCalls).isEqualTo(1)
