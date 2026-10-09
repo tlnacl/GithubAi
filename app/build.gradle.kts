@@ -1,4 +1,5 @@
 plugins {
+    alias(libs.plugins.room)
     alias(libs.plugins.kover)
     id("codex.android-application")
     alias(libs.plugins.kotlin.compose)
@@ -10,6 +11,7 @@ android {
     buildFeatures { buildConfig = true }
     defaultConfig {
         applicationId = "com.tlnacl.githubcompose"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         versionCode = 1
         versionName = "1.0"
     }
@@ -29,7 +31,17 @@ android {
         }
     }
 }
+room { schemaDirectory("$projectDir/schemas") }
+
 dependencies {
+    implementation(libs.room.runtime)
+    ksp(libs.room.compiler)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.test.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation(libs.timber)
     // Tapadoo uses Material icons but omits their runtime dependency.
     "qaImplementation"(libs.androidx.compose.material.icons.core)
