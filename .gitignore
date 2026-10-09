@@ -6,3 +6,8 @@
 **/build/
 
 .kotlin/
+
+# Keep OpenSpec planning and generated skills local.
+/openspec/
+/.agents/skills/openspec-*/
+/.agents/skills/.openspec-target
